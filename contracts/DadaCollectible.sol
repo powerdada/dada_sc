@@ -7,21 +7,23 @@ contract DadaCollectible {
   
   address owner;
 
-
   struct Collectible{
-    uint id;
-    uint printsCap;
-    // uint unit;
-  }
-
-  Collectible[] collectibles = [Collectible(123,1000), Collectible(124,500), Collectible(112,3)];
-
-  mapping(Collectible => address) punkIndexToAddress;
+    // uint id;
+    uint totalSupply;
+    uint nextDrawingIndexToAssign;
+    bool allPrintsAssigned;
+    uint printsRemainingToAssign;
+    mapping (uint => address) printIndexToAddress;
+    /* This creates an array with all balances */
+    mapping (address => uint) balanceOf;    
+  }    
   
+  mapping (uint => Collectible) drawingIdToCollectibles;
 
   struct Offer {
       bool isForSale;
-      uint collectibleIndex;
+      uint collectibleId;
+      uint collectiblePrintIndex;
       address seller;
       uint minValue;          // in ether
       address onlySellTo;     // specify to sell only to a specific person
@@ -29,7 +31,8 @@ contract DadaCollectible {
 
   struct Bid {
       bool hasBid;
-      uint collectibleIndex;
+      uint collectibleId;
+      uint collectiblePrintIndex;
       address bidder;
       uint value;
   }
@@ -57,5 +60,19 @@ contract DadaCollectible {
     // "owner" of the contract. Since the contract doesn't have 
     // a "set" function for the owner attribute this value will be immutable. 
     owner = msg.sender;
-  }  
+
+    drawingIdToCollectibles[123] = Collectible(1000,0,false,1000);
+    drawingIdToCollectibles[124] = Collectible(500,0,false,500);
+    drawingIdToCollectibles[112] = Collectible(3,0,false,3);    
+  }
+
+  function newCollectible(uint drawingId, uint totalSupply){
+    // requires the sender to be the same address that compiled the contract,
+    // this is ensured by storing the sender address
+    require(owner == msg.sender);
+    // requires the drawing to not exist already in the scope of the contract
+    require(drawingIdToCollectibles[drawingId] == 0x0);
+    drawingIdToCollectibles[drawingId] = Collectible(totalSupply, 0, false, totalSupply);
+  }
+
 }
