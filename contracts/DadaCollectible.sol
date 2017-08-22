@@ -71,8 +71,41 @@ contract DadaCollectible {
     // this is ensured by storing the sender address
     require(owner == msg.sender);
     // requires the drawing to not exist already in the scope of the contract
-    require(drawingIdToCollectibles[drawingId] == 0x0);
+    // require(drawingIdToCollectibles[drawingId] == 0x0);
     drawingIdToCollectibles[drawingId] = Collectible(totalSupply, 0, false, totalSupply);
+  }
+
+
+  function buyCollectible(uint drawingId, uint printIndex) payable {
+    // requires the drawing id to actually exist
+    // require(drawingIdToCollectibles[drawingId] != 0x0);
+    Collectible memory collectible = drawingIdToCollectibles[drawingId];
+    require(printIndex < collectible.totalSupply);
+    // Offer storage offer = punksOfferedForSale[drawingId];
+    // require(offer.isForSale);                // punk actually for sale
+    // require (offer.onlySellTo == 0x0 || offer.onlySellTo == msg.sender);  // punk can to be sold to this user
+    // require(msg.value >= offer.minValue);      // Didn't send enough ETH
+    // require(offer.seller == drawingIdToAddress[drawingId]); // Seller still owner of punk
+
+    // address seller = offer.seller;
+
+    // drawingIdToAddress[drawingId] = msg.sender;
+    // balanceOf[seller]--;
+    // balanceOf[msg.sender]++;
+    // Transfer(seller, msg.sender, 1);
+
+    // punkNoLongerForSale(drawingId);
+    // pendingWithdrawals[seller] += msg.value;
+    // PunkBought(drawingId, msg.value, seller, msg.sender);
+
+    // // Check for the case where there is a bid from the new owner and refund it.
+    // // Any other bid can stay in place.
+    // Bid storage bid = punkBids[drawingId];
+    // if (bid.bidder == msg.sender) {
+    //     // Kill bid and refund value
+    //     pendingWithdrawals[msg.sender] += bid.value;
+    //     punkBids[drawingId] = Bid(false, drawingId, 0x0, 0);
+    // }
   }
 
 }
