@@ -55,7 +55,7 @@ contract DadaCollectible {
   event Transfered(address indexed from, address indexed to, uint256 value);
   event CollectibleTransfered(address indexed from, address indexed to, uint256 collectibleIndex);
   event CollectibleOffered(uint indexed collectibleIndex, uint indexed printIndex, uint minValue, address indexed toAddress);
-  event CollectibleBidEntered(uint indexed collectibleIndex, uint value, address indexed fromAddress);
+  event CollectibleBidEntered(uint indexed collectibleIndex, uint indexed printIndex, uint value, address indexed fromAddress);
   event CollectibleBidWithdrawn(uint indexed collectibleIndex, uint value, address indexed fromAddress);
   event CollectibleBought(uint indexed collectibleIndex, uint printIndex, uint value, address indexed fromAddress, address indexed toAddress);
   event CollectibleNoLongerForSale(uint indexed collectibleIndex, uint indexed printIndex);
@@ -122,6 +122,29 @@ contract DadaCollectible {
     }
   }
 
+  function enterBidForCollectible(uint drawingId, uint printIndex) payable {
+    require(drawingIdToCollectibles[drawingId].drawingId != 0);
+    Collectible storage collectible = drawingIdToCollectibles[drawingId];
+    require(collectible.printIndexToAddress[printIndex] != 0x0); // Print is owned by somebody
+    require(collectible.printIndexToAddress[printIndex] != msg.sender); // Print is not owned by bidder
+    require(printIndex < collectible.totalSupply);
+    // require(allPunksAssigned);            
+
+    require(msg.value > 0); // Bid must be greater than 0
+    // get the current bid for that print if any
+    Bid storage existing = collectible.collectibleBids[printIndex];
+    // Must outbid previous bid by at least 5%. Apparently is not possible to 
+    // multiply by 1.05, that's why we do it manually.
+    require(msg.value >= existing.value+(existing.value*5/100));
+    if (existing.value > 0) {
+        // Refund the failing bid from the previous bidder
+        pendingWithdrawals[existing.bidder] += existing.value;
+    }
+    // add the new bid
+    collectible.collectibleBids[printIndex] = Bid(true, collectible.drawingId, printIndex, msg.sender, msg.value);
+    CollectibleBidEntered(collectible.drawingId, printIndex, msg.value, msg.sender);
+  }
+
   // seller's functions
   function offerCollectibleForSale(uint drawingId, uint printIndex, uint minSalePriceInWei) {
     // require(allCollectiblesAssigned);
@@ -144,6 +167,27 @@ contract DadaCollectible {
     collectible.collectiblesOfferedForSale[printIndex] = Offer(true, collectible.drawingId, printIndex, msg.sender, minSalePriceInWei, toAddress);
     CollectibleOffered(drawingId, printIndex, minSalePriceInWei, toAddress);
   }
+    //TODO
+    function acceptBidForPunk(uint punkIndex, uint minPrice) {
+        require(punkIndex < 10000);
+        require(allPunksAssigned);                
+        require(punkIndexToAddress[punkIndex] == msg.sender);
+        address seller = msg.sender;
+        Bid storage bid = punkBids[punkIndex];
+        require(bid.value > 0); // Will be zero if there is no actual bid
+        require(bid.value >= minPrice); // Prevent a condition where a bid is withdrawn and replaced with a lower bid but seller doesn't know
+
+        punkIndexToAddress[punkIndex] = bid.bidder;
+        balanceOf[seller]--;
+        balanceOf[bid.bidder]++;
+        Transfer(seller, bid.bidder, 1);
+
+        punksOfferedForSale[punkIndex] = Offer(false, punkIndex, bid.bidder, 0, 0x0);
+        uint amount = bid.value;
+        punkBids[punkIndex] = Bid(false, punkIndex, 0x0, 0);
+        pendingWithdrawals[seller] += amount;
+        PunkBought(punkIndex, bid.value, seller, bid.bidder);
+    }
 
   // utility functions
   function makeCollectibleUnavailableToSale(uint drawingId, uint printIndex) {
@@ -156,6 +200,5 @@ contract DadaCollectible {
     // launch the CollectibleNoLongerForSale event 
     CollectibleNoLongerForSale(collectible.drawingId, printIndex);
   }
-
 
 }
