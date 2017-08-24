@@ -53,10 +53,10 @@ contract DadaCollectible {
 
   event Assigned(address indexed to, uint256 collectibleIndex);
   event Transfered(address indexed from, address indexed to, uint256 value);
-  event CollectibleTransfered(address indexed from, address indexed to, uint256 collectibleIndex);
+  event CollectibleTransfered(address indexed from, address indexed to, uint256 collectibleIndex, uint256 printIndex);
   event CollectibleOffered(uint indexed collectibleIndex, uint indexed printIndex, uint minValue, address indexed toAddress);
   event CollectibleBidEntered(uint indexed collectibleIndex, uint indexed printIndex, uint value, address indexed fromAddress);
-  event CollectibleBidWithdrawn(uint indexed collectibleIndex, uint value, address indexed fromAddress);
+  event CollectibleBidWithdrawn(uint indexed collectibleIndex, uint indexed printIndex, uint value, address indexed fromAddress);
   event CollectibleBought(uint indexed collectibleIndex, uint printIndex, uint value, address indexed fromAddress, address indexed toAddress);
   event CollectibleNoLongerForSale(uint indexed collectibleIndex, uint indexed printIndex);
 
@@ -145,6 +145,24 @@ contract DadaCollectible {
     CollectibleBidEntered(collectible.drawingId, printIndex, msg.value, msg.sender);
   }
 
+  // used by a user who wants to cancell a bid placed by her/him
+  function withdrawBidForCollectible(uint drawingId, uint printIndex) {
+    require(drawingIdToCollectibles[drawingId].drawingId != 0);
+    Collectible storage collectible = drawingIdToCollectibles[drawingId];
+    require(printIndex < collectible.totalSupply);
+    // require(allPunksAssigned);
+    require(collectible.printIndexToAddress[printIndex] != 0x0); // Print is owned by somebody
+    require(collectible.printIndexToAddress[printIndex] != msg.sender); // Print is not owned by bidder
+    Bid storage bid = collectible.collectibleBids[printIndex];
+    require(bid.bidder == msg.sender);
+    CollectibleBidWithdrawn(drawingId, printIndex, bid.value, msg.sender);
+
+    uint amount = bid.value;
+    collectible.collectibleBids[printIndex] = Bid(false, collectible.drawingId, printIndex, 0x0, 0);
+    // Refund the bid money
+    msg.sender.transfer(amount);
+  }
+
   // seller's functions
   function offerCollectibleForSale(uint drawingId, uint printIndex, uint minSalePriceInWei) {
     // require(allCollectiblesAssigned);
@@ -167,27 +185,68 @@ contract DadaCollectible {
     collectible.collectiblesOfferedForSale[printIndex] = Offer(true, collectible.drawingId, printIndex, msg.sender, minSalePriceInWei, toAddress);
     CollectibleOffered(drawingId, printIndex, minSalePriceInWei, toAddress);
   }
-    //TODO
-    function acceptBidForPunk(uint punkIndex, uint minPrice) {
-        require(punkIndex < 10000);
-        require(allPunksAssigned);                
-        require(punkIndexToAddress[punkIndex] == msg.sender);
-        address seller = msg.sender;
-        Bid storage bid = punkBids[punkIndex];
-        require(bid.value > 0); // Will be zero if there is no actual bid
-        require(bid.value >= minPrice); // Prevent a condition where a bid is withdrawn and replaced with a lower bid but seller doesn't know
 
-        punkIndexToAddress[punkIndex] = bid.bidder;
-        balanceOf[seller]--;
-        balanceOf[bid.bidder]++;
-        Transfer(seller, bid.bidder, 1);
+  function acceptBidForCollectible(uint drawingId, uint printIndex, uint minPrice) {
+    require(drawingIdToCollectibles[drawingId].drawingId != 0);
+    Collectible storage collectible = drawingIdToCollectibles[drawingId];
+    require(printIndex < collectible.totalSupply);
+    // require(allPunksAssigned);                
+    require(collectible.printIndexToAddress[printIndex] == msg.sender);
+    address seller = msg.sender;
 
-        punksOfferedForSale[punkIndex] = Offer(false, punkIndex, bid.bidder, 0, 0x0);
-        uint amount = bid.value;
-        punkBids[punkIndex] = Bid(false, punkIndex, 0x0, 0);
-        pendingWithdrawals[seller] += amount;
-        PunkBought(punkIndex, bid.value, seller, bid.bidder);
+    Bid storage bid = collectible.collectibleBids[printIndex];
+    require(bid.value > 0); // Will be zero if there is no actual bid
+    require(bid.value >= minPrice); // Prevent a condition where a bid is withdrawn and replaced with a lower bid but seller doesn't know
+
+    collectible.printIndexToAddress[printIndex] = bid.bidder;
+    collectible.balanceOf[seller]--;
+    collectible.balanceOf[bid.bidder]++;
+    Transfered(seller, bid.bidder, 1);
+
+    collectible.collectiblesOfferedForSale[printIndex] = Offer(false, collectible.drawingId, printIndex, bid.bidder, 0, 0x0);
+    uint amount = bid.value;
+    collectible.collectibleBids[printIndex] = Bid(false, collectible.drawingId, printIndex, 0x0, 0);
+    pendingWithdrawals[seller] += amount;
+    CollectibleBought(collectible.drawingId, printIndex, bid.value, seller, bid.bidder);
+  }
+
+  // used by a user who wants to cashout his money
+  function withdraw() {
+    // require(allPunksAssigned);
+    uint amount = pendingWithdrawals[msg.sender];
+    // Remember to zero the pending refund before
+    // sending to prevent re-entrancy attacks
+    pendingWithdrawals[msg.sender] = 0;
+    msg.sender.transfer(amount);
+  }
+
+  // Transfer ownership of a punk to another user without requiring payment
+  function transferCollectible(address to, uint drawingId, uint printIndex) {//in progress
+    // require(allPunksAssigned);
+    require(drawingIdToCollectibles[drawingId].drawingId != 0);
+    Collectible storage collectible = drawingIdToCollectibles[drawingId];
+    // checks that the user making the transfer is the actual owner of the print
+    require(collectible.printIndexToAddress[printIndex] == msg.sender);
+    require(printIndex < collectible.totalSupply);
+    if (collectible.collectiblesOfferedForSale[printIndex].isForSale) {
+      makeCollectibleUnavailableToSale(drawingId, printIndex);
     }
+    // sets the new owner of the print
+    collectible.printIndexToAddress[printIndex] = to;
+    collectible.balanceOf[msg.sender]--;
+    collectible.balanceOf[to]++;
+    Transfered(msg.sender, to, 1);
+    CollectibleTransfered(msg.sender, to, drawingId, printIndex);
+    // Check for the case where there is a bid from the new owner and refund it.
+    // Any other bid can stay in place.
+    Bid storage bid = collectible.collectibleBids[printIndex];
+    if (bid.bidder == to) {
+      // Kill bid and refund value
+      pendingWithdrawals[to] += bid.value;
+      collectible.collectibleBids[printIndex] = Bid(false, drawingId, printIndex, 0x0, 0);
+    }
+  }
+
 
   // utility functions
   function makeCollectibleUnavailableToSale(uint drawingId, uint printIndex) {
