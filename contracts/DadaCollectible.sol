@@ -7,6 +7,8 @@ contract DadaCollectible {
   
   address owner;
 
+  bool isExecutionAllowed = true;
+
   struct Offer {
       bool isForSale;
       uint drawingId;
@@ -60,7 +62,6 @@ contract DadaCollectible {
   event CollectibleBought(uint indexed collectibleIndex, uint printIndex, uint value, address indexed fromAddress, address indexed toAddress);
   event CollectibleNoLongerForSale(uint indexed collectibleIndex, uint indexed printIndex);
 
-
   // The constructor is executed only when the contract is created in the blockchain.
   function DadaCollectible () { //payable?
     // assigns the address of the account creating the contract as the 
@@ -73,19 +74,11 @@ contract DadaCollectible {
     drawingIdToCollectibles[112] = Collectible(112,3,0,false,3);
   }
 
-  function newCollectible(uint drawingId, uint totalSupply){
-    // requires the sender to be the same address that compiled the contract,
-    // this is ensured by storing the sender address
-    require(owner == msg.sender);
-    // requires the drawing to not exist already in the scope of the contract
-    require(drawingIdToCollectibles[drawingId].drawingId == 0);
-    drawingIdToCollectibles[drawingId] = Collectible(drawingId, totalSupply, 0, false, totalSupply);
-  }
-
   // main business logic functions
 
   // buyer's functions
   function buyCollectible(uint drawingId, uint printIndex) payable {
+    require(isExecutionAllowed);
     // requires the drawing id to actually exist
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
@@ -123,6 +116,7 @@ contract DadaCollectible {
   }
 
   function enterBidForCollectible(uint drawingId, uint printIndex) payable {
+    require(isExecutionAllowed);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
     require(collectible.printIndexToAddress[printIndex] != 0x0); // Print is owned by somebody
@@ -147,6 +141,7 @@ contract DadaCollectible {
 
   // used by a user who wants to cancell a bid placed by her/him
   function withdrawBidForCollectible(uint drawingId, uint printIndex) {
+    require(isExecutionAllowed);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
     require(printIndex < collectible.totalSupply);
@@ -165,6 +160,7 @@ contract DadaCollectible {
 
   // seller's functions
   function offerCollectibleForSale(uint drawingId, uint printIndex, uint minSalePriceInWei) {
+    require(isExecutionAllowed);
     // require(allCollectiblesAssigned);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
@@ -176,6 +172,7 @@ contract DadaCollectible {
   }
 
   function offerCollectibleForSaleToAddress(uint drawingId, uint printIndex, uint minSalePriceInWei, address toAddress) {
+    require(isExecutionAllowed);
     // require(allCollectiblesAssigned);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
@@ -187,6 +184,7 @@ contract DadaCollectible {
   }
 
   function acceptBidForCollectible(uint drawingId, uint printIndex, uint minPrice) {
+    require(isExecutionAllowed);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
     require(printIndex < collectible.totalSupply);
@@ -205,13 +203,14 @@ contract DadaCollectible {
 
     collectible.collectiblesOfferedForSale[printIndex] = Offer(false, collectible.drawingId, printIndex, bid.bidder, 0, 0x0);
     uint amount = bid.value;
+    CollectibleBought(collectible.drawingId, printIndex, bid.value, seller, bid.bidder);
     collectible.collectibleBids[printIndex] = Bid(false, collectible.drawingId, printIndex, 0x0, 0);
     pendingWithdrawals[seller] += amount;
-    CollectibleBought(collectible.drawingId, printIndex, bid.value, seller, bid.bidder);
   }
 
   // used by a user who wants to cashout his money
   function withdraw() {
+    require(isExecutionAllowed);
     // require(allPunksAssigned);
     uint amount = pendingWithdrawals[msg.sender];
     // Remember to zero the pending refund before
@@ -222,6 +221,7 @@ contract DadaCollectible {
 
   // Transfer ownership of a punk to another user without requiring payment
   function transferCollectible(address to, uint drawingId, uint printIndex) {//in progress
+    require(isExecutionAllowed);
     // require(allPunksAssigned);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
@@ -247,9 +247,9 @@ contract DadaCollectible {
     }
   }
 
-
   // utility functions
   function makeCollectibleUnavailableToSale(uint drawingId, uint printIndex) {
+    require(isExecutionAllowed);
     // require(allCollectiblesAssigned);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
@@ -258,6 +258,20 @@ contract DadaCollectible {
     collectible.collectiblesOfferedForSale[printIndex] = Offer(false, collectible.drawingId, printIndex, msg.sender, 0, 0x0);
     // launch the CollectibleNoLongerForSale event 
     CollectibleNoLongerForSale(collectible.drawingId, printIndex);
+  }
+
+  function newCollectible(uint drawingId, uint totalSupply){
+    // requires the sender to be the same address that compiled the contract,
+    // this is ensured by storing the sender address
+    require(owner == msg.sender);
+    // requires the drawing to not exist already in the scope of the contract
+    require(drawingIdToCollectibles[drawingId].drawingId == 0);
+    drawingIdToCollectibles[drawingId] = Collectible(drawingId, totalSupply, 0, false, totalSupply);
+  }
+
+  function flipSwitchTo(bool state){
+    require(owner == msg.sender);
+    isExecutionAllowed = state;
   }
 
 }
