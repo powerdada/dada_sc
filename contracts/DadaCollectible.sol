@@ -1,4 +1,4 @@
-pragma solidity ^0.4.10;
+pragma solidity ^0.4.2;
 
 /**
  * This contract handles the actions for every collectible on DADA...
@@ -68,9 +68,9 @@ contract DadaCollectible {
     // a "set" function for the owner attribute this value will be immutable. 
     owner = msg.sender;
 
-    drawingIdToCollectibles[123] = Collectible(123,1000,0,false,1000);
-    drawingIdToCollectibles[124] = Collectible(124,500,0,false,500);
-    drawingIdToCollectibles[112] = Collectible(112,3,0,false,3);
+    drawingIdToCollectibles[766] = Collectible(766,5,0,false,5);
+    drawingIdToCollectibles[765] = Collectible(765,5,0,false,5);
+    drawingIdToCollectibles[764] = Collectible(764,10,0,false,10);
   }
 
   function newCollectible(uint drawingId, uint totalSupply){
