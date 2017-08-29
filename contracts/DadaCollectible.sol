@@ -75,9 +75,9 @@ contract DadaCollectible {
     owner = msg.sender;
     // Collectible(drawingId, name, totalSupply, 
     //  nextPrintIndexToAssign, allPrintsAssigned,initialPrice);
-    drawingIdToCollectibles[766] = Collectible(766,'Something',5,0,false,100);
-    drawingIdToCollectibles[765] = Collectible(765,'Something else',5,0,false,100);
-    drawingIdToCollectibles[764] = Collectible(764,'Nothing',10,0,false,20);
+    // drawingIdToCollectibles[766] = Collectible(766,'Something',5,0,false,100);
+    // drawingIdToCollectibles[765] = Collectible(765,'Something else',5,0,false,100);
+    // drawingIdToCollectibles[764] = Collectible(764,'Nothing',10,0,false,20);
   }
 
   // main business logic functions
