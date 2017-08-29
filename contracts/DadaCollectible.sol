@@ -6,6 +6,7 @@ pragma solidity ^0.4.13;
 contract DadaCollectible {
   
   address owner;
+  address test_owner = 0x74E70E9f66A63fB157c3B3519b994e33188Fae29;
 
   // starts turned off to prepare the drawings before going public
   bool isExecutionAllowed = false;
@@ -311,20 +312,23 @@ contract DadaCollectible {
   function newCollectible(uint drawingId, string name, uint totalSupply, uint initialPrice){
     // requires the sender to be the same address that compiled the contract,
     // this is ensured by storing the sender address
-    require(owner == msg.sender);
+    // require(owner == msg.sender);
+    require(test_owner == msg.sender);
     // requires the drawing to not exist already in the scope of the contract
     require(drawingIdToCollectibles[drawingId].drawingId == 0);
     drawingIdToCollectibles[drawingId] = Collectible(drawingId, name, totalSupply, 0, false, initialPrice);
   }
 
   function flipSwitchTo(bool state){
-    require(owner == msg.sender);
+    // require(owner == msg.sender);
+    require(test_owner == msg.sender);
     isExecutionAllowed = state;
   }
 
 
   function reserveCollectiblesForOwner(uint drawingId, uint maxForThisRun) {
-    require(owner == msg.sender);
+    // require(owner == msg.sender);
+    require(test_owner == msg.sender);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
     require(collectible.nextPrintIndexToAssign < collectible.totalSupply);
