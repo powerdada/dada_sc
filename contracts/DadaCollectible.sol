@@ -353,6 +353,6 @@ contract DadaCollectible {
   function getCollectiblePrint(uint drawingId, uint printIndex) public returns(address printOwner){
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
-    return (collectible.printIndexToAddress[printIndex]);
+    return collectible.printIndexToAddress[printIndex];
   }
 }
