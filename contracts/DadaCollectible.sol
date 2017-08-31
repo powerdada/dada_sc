@@ -106,6 +106,7 @@ contract DadaCollectible {
     require(offer.onlySellTo == 0x0 || offer.onlySellTo == msg.sender);  // drawing can be sold to this user
     require(msg.value >= offer.minValue); // Didn't send enough ETH
     require(offer.seller == DrawingPrintToAddress[printIndex]); // Seller still owner of the drawing
+    require(DrawingPrintToAddress[printIndex] != msg.sender);
 
     address seller = offer.seller;
     address buyer = msg.sender;
