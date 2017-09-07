@@ -6,7 +6,10 @@ pragma solidity ^0.4.13;
 contract DadaCollectible {
   
   address owner;
-  address test_owner = 0x74E70E9f66A63fB157c3B3519b994e33188Fae29;
+  // jgonzalez
+  // address test_owner = 0x74E70E9f66A63fB157c3B3519b994e33188Fae29;
+  // amilano
+  address test_owner = 0x520B8e6048C9603b7fee1c4953D2f04E07E42a19;
 
   // starts turned off to prepare the drawings before going public
   bool isExecutionAllowed = false;
@@ -360,6 +363,10 @@ contract DadaCollectible {
       collectible.allPrintsAssigned = true;
     }
   }
+
+  function getDrawingsByAccount(address owner) public returns(uint[]){
+
+  } 
 
   // // converts uint into string
   // function uintToString(uint v) internal returns (string) {
