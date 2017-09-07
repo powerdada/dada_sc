@@ -356,8 +356,6 @@ contract DadaCollectible {
         numberCollectiblesReservedThisRun++;
         collectible.nextPrintIndexToAssign++;
     }
-    // collectible.totalSupply -= numberCollectiblesReservedThisRun;
-    //collectible.nextPrintIndexToAssign += numberCollectiblesReservedThisRun;
     collectible.balanceOf[msg.sender] += numberCollectiblesReservedThisRun;
     if(collectible.totalSupply+collectible.initialPrintIndex == collectible.nextPrintIndexToAssign){
       collectible.allPrintsAssigned = true;
