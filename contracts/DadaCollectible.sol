@@ -7,9 +7,9 @@ contract DadaCollectible {
   
   address owner;
   // jgonzalez
-  // address test_owner = 0x74E70E9f66A63fB157c3B3519b994e33188Fae29;
+  address test_owner = 0x74E70E9f66A63fB157c3B3519b994e33188Fae29;
   // amilano
-  address test_owner = 0x520B8e6048C9603b7fee1c4953D2f04E07E42a19;
+  // address test_owner = 0x520B8e6048C9603b7fee1c4953D2f04E07E42a19;
 
   // starts turned off to prepare the drawings before going public
   bool isExecutionAllowed = false;
