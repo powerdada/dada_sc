@@ -364,9 +364,9 @@ contract DadaCollectible {
     }
   }
 
-  function getDrawingsByAccount(address owner) public returns(uint[]){
+  // function getDrawingsByAccount(address owner) public returns(uint[]){
 
-  } 
+  // } 
 
   // // converts uint into string
   // function uintToString(uint v) internal returns (string) {
