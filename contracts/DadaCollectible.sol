@@ -7,9 +7,11 @@ contract DadaCollectible {
   
   address owner;
   // jgonzalez
-  address test_owner = 0x74E70E9f66A63fB157c3B3519b994e33188Fae29;
+  address test_owner_1 = 0x74E70E9f66A63fB157c3B3519b994e33188Fae29;
   // amilano
-  // address test_owner = 0x520B8e6048C9603b7fee1c4953D2f04E07E42a19;
+  address test_owner_2 = 0x520B8e6048C9603b7fee1c4953D2f04E07E42a19;
+  // jcflorville
+  address test_owner_3 = 0xad1e433c07d3a972bab356b760c4f6ef5bab4b76;
 
   // starts turned off to prepare the drawings before going public
   bool isExecutionAllowed = false;
@@ -327,7 +329,7 @@ contract DadaCollectible {
     // requires the sender to be the same address that compiled the contract,
     // this is ensured by storing the sender address
     // require(owner == msg.sender);
-    require(test_owner == msg.sender);
+    require(test_owner_1 == msg.sender || test_owner_2 == msg.sender || test_owner_3 == msg.sender);
     // requires the drawing to not exist already in the scope of the contract
     require(drawingIdToCollectibles[drawingId].drawingId == 0);
     drawingIdToCollectibles[drawingId] = Collectible(drawingId, name, totalSupply, initialPrintIndex, false, initialPrice, initialPrintIndex);
@@ -335,14 +337,14 @@ contract DadaCollectible {
 
   function flipSwitchTo(bool state){
     // require(owner == msg.sender);
-    require(test_owner == msg.sender);
+    require(test_owner_1 == msg.sender || test_owner_2 == msg.sender || test_owner_3 == msg.sender);
     isExecutionAllowed = state;
   }
 
 
   function reserveCollectiblesForOwner(uint drawingId, uint maxForThisRun) {
     // require(owner == msg.sender);
-    require(test_owner == msg.sender);
+    require(test_owner_1 == msg.sender || test_owner_2 == msg.sender || test_owner_3 == msg.sender);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
     require(collectible.nextPrintIndexToAssign < collectible.totalSupply+collectible.initialPrintIndex);
