@@ -80,7 +80,12 @@ contract DadaCollectible {
   /* This creates an array with all balances */
   mapping (address => uint) balanceOf;
 
-  mapping (address => uint[][]) public userOwnershipLog;
+  struct OwnershipLogItem{
+    uint printIndex;
+    string status;
+  }
+
+  mapping (address => OwnershipLogItem[]) public userOwnershipLog;
 
   event Assigned(address indexed to, uint256 collectibleIndex, uint256 printIndex);
   event Transfered(address indexed from, address indexed to, uint256 value);
@@ -125,11 +130,11 @@ contract DadaCollectible {
     address buyer = msg.sender;
 
     DrawingPrintToAddress[printIndex] = buyer; // "gives" the print to the buyer
-    uint[][] storage uol_buyer = userOwnershipLog[buyer];
-    uol_buyer.push([printIndex,1]);
+    OwnershipLogItem[] storage uol_buyer = userOwnershipLog[buyer];
+    uol_buyer.push(OwnershipLogItem(printIndex,'in'));
 
-    uint[][] storage uol_seller = userOwnershipLog[seller];
-    uol_seller.push([printIndex,0]);
+    OwnershipLogItem[] storage uol_seller = userOwnershipLog[seller];
+    uol_seller.push(OwnershipLogItem(printIndex,'out'));
 
     // decrease by one the amount of prints the seller has of this particullar drawing
     balanceOf[seller]--;
@@ -196,11 +201,11 @@ contract DadaCollectible {
     address buyer = msg.sender;
 
     DrawingPrintToAddress[printIndex] = buyer; // "gives" the print to the buyer
-    uint[][] storage uol_buyer = userOwnershipLog[buyer];
-    uol_buyer.push([printIndex,1]);
+    OwnershipLogItem[] storage uol_buyer = userOwnershipLog[buyer];
+    uol_buyer.push(OwnershipLogItem(printIndex,'in'));
 
-    uint[][] storage uol_seller = userOwnershipLog[seller];
-    uol_seller.push([printIndex,0]);
+    OwnershipLogItem[] storage uol_seller = userOwnershipLog[seller];
+    uol_seller.push(OwnershipLogItem(printIndex,'out'));
 
     // decrease by one the amount of prints the seller has of this particullar drawing
     // commented while we decide what to do with balances for DADA
