@@ -11,7 +11,7 @@ contract DadaCollectible {
   // amilano
   address test_owner_2 = 0x520B8e6048C9603b7fee1c4953D2f04E07E42a19;
   // jcflorville
-  address test_owner_3 = 0xad1e433c07d3a972bab356b760c4f6ef5bab4b76;
+  address test_owner_3 = 0xA8CB5714d4830e7503a1585448e130A15f6bED64;
 
   // starts turned off to prepare the drawings before going public
   bool isExecutionAllowed = false;
