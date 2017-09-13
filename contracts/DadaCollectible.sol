@@ -11,8 +11,8 @@ contract DadaCollectible {
   // amilano
   address test_owner_2 = 0x520B8e6048C9603b7fee1c4953D2f04E07E42a19;
   // jcflorville
-  address test_owner_3 = 0xad1e433c07d3a972bab356b760c4f6ef5bab4b76;
-
+  address test_owner_3 = 0xA8CB5714d4830e7503a1585448e130A15f6bED64;
+  // DADA ACCOUNT
   address dada_account = 0x520B8e6048C9603b7fee1c4953D2f04E07E42a19;
 
   // starts turned off to prepare the drawings before going public
@@ -403,7 +403,6 @@ contract DadaCollectible {
     isExecutionAllowed = state;
   }
 
-
   function reserveCollectiblesForOwner(uint drawingId, uint maxForThisRun) {
     // require(owner == msg.sender);
     require(test_owner_1 == msg.sender || test_owner_2 == msg.sender || test_owner_3 == msg.sender);
@@ -432,41 +431,4 @@ contract DadaCollectible {
     drawingIdToCollectibles[drawingId].allPrintsAssigned = true;
   }
   
-  // function getDrawingsByAccount(address owner) public returns(uint[]){
-
-  // } 
-
-  // // converts uint into string
-  // function uintToString(uint v) internal returns (string) {
-  //   uint maxlength = 100;
-  //   bytes memory reversed = new bytes(maxlength);
-  //   uint i = 0;
-  //   while (v != 0) {
-  //       uint remainder = v % 10;
-  //       v = v / 10;
-  //       reversed[i++] = byte(48 + remainder);
-  //   }
-  //   bytes memory s = new bytes(i + 1);
-  //   for (uint j = 0; j <= i; j++) {
-  //       s[j] = reversed[i - j];
-  //   }
-  //   return string(s);
-  // }
-  // function strConcat(string _a, string _b) internal returns (string){
-  //   bytes memory _ba = bytes(_a);
-  //   bytes memory _bb = bytes(_b);
-  //   string memory ab = new string(_ba.length + _bb.length);
-  //   bytes memory bab = bytes(ab);
-  //   uint k = 0;
-  //   for (uint i = 0; i < _ba.length; i++) bab[k++] = _ba[i];
-  //   for (i = 0; i < _bb.length; i++) bab[k++] = _bb[i];
-  //   return string(bab);
-  // }  
-  // function stringToBytes32(string key) internal returns (bytes32 ret) {
-  //   require(bytes(key).length <= 32);
-
-  //   assembly {
-  //     ret := mload(add(key, 32))
-  //   }
-  // } 
 }

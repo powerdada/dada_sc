@@ -3,11 +3,13 @@ require('babel-register')
 
 module.exports = {
   networks: {
+    live: {
+      network_id: 1
+    },
     development: {
       host: 'localhost',
       port: 8545,
-      network_id: '*'//, // Match any network id
-      // gas: 4712388
+      network_id: 3
     },
     rinkeby: {
       host: "localhost", // Connect to geth on the specified
