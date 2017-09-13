@@ -80,6 +80,8 @@ contract DadaCollectible {
   /* This creates an array with all balances */
   mapping (address => uint) balanceOf;
 
+  mapping (address => uint[][]) public userOwnershipLog;
+
   event Assigned(address indexed to, uint256 collectibleIndex, uint256 printIndex);
   event Transfered(address indexed from, address indexed to, uint256 value);
   event CollectibleTransfered(address indexed from, address indexed to, uint256 collectibleIndex, uint256 printIndex);
@@ -123,6 +125,12 @@ contract DadaCollectible {
     address buyer = msg.sender;
 
     DrawingPrintToAddress[printIndex] = buyer; // "gives" the print to the buyer
+    uol = userOwnershipLog[buyer];
+    uol.push([printIndex,1]);
+
+    uol = userOwnershipLog[seller];
+    uol.push([printIndex,0]);
+
     // decrease by one the amount of prints the seller has of this particullar drawing
     balanceOf[seller]--;
     // increase by one the amount of prints the buyer has of this particullar drawing
@@ -188,6 +196,12 @@ contract DadaCollectible {
     address buyer = msg.sender;
 
     DrawingPrintToAddress[printIndex] = buyer; // "gives" the print to the buyer
+    uol = userOwnershipLog[buyer];
+    uol.push([printIndex,1]);
+
+    uol = userOwnershipLog[seller];
+    uol.push([printIndex,0]);
+    
     // decrease by one the amount of prints the seller has of this particullar drawing
     // commented while we decide what to do with balances for DADA
     // balanceOf[seller]--;
