@@ -78,7 +78,7 @@ contract DadaCollectible {
   mapping (address => uint) public pendingWithdrawals;
 
   /* This creates an array with all balances */
-  mapping (addrebalanceOf;
+  mapping (address => uint) balanceOf;
 
   event Assigned(address indexed to, uint256 collectibleIndex, uint256 printIndex);
   event Transfered(address indexed from, address indexed to, uint256 value);
