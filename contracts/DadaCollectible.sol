@@ -125,11 +125,11 @@ contract DadaCollectible {
     address buyer = msg.sender;
 
     DrawingPrintToAddress[printIndex] = buyer; // "gives" the print to the buyer
-    uol = userOwnershipLog[buyer];
-    uol.push([printIndex,1]);
+    uint[][] storage uol_buyer = userOwnershipLog[buyer];
+    uol_buyer.push([printIndex,1]);
 
-    uol = userOwnershipLog[seller];
-    uol.push([printIndex,0]);
+    uint[][] storage uol_seller = userOwnershipLog[seller];
+    uol_seller.push([printIndex,0]);
 
     // decrease by one the amount of prints the seller has of this particullar drawing
     balanceOf[seller]--;
@@ -196,12 +196,12 @@ contract DadaCollectible {
     address buyer = msg.sender;
 
     DrawingPrintToAddress[printIndex] = buyer; // "gives" the print to the buyer
-    uol = userOwnershipLog[buyer];
-    uol.push([printIndex,1]);
+    uint[][] storage uol_buyer = userOwnershipLog[buyer];
+    uol_buyer.push([printIndex,1]);
 
-    uol = userOwnershipLog[seller];
-    uol.push([printIndex,0]);
-    
+    uint[][] storage uol_seller = userOwnershipLog[seller];
+    uol_seller.push([printIndex,0]);
+
     // decrease by one the amount of prints the seller has of this particullar drawing
     // commented while we decide what to do with balances for DADA
     // balanceOf[seller]--;
