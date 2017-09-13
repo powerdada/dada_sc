@@ -12,6 +12,8 @@ contract DadaCollectible {
   address test_owner_2 = 0x520B8e6048C9603b7fee1c4953D2f04E07E42a19;
   // jcflorville
   address test_owner_3 = 0xA8CB5714d4830e7503a1585448e130A15f6bED64;
+  // DADA ACCOUNT
+  address dada_account = 0x520B8e6048C9603b7fee1c4953D2f04E07E42a19;
 
   // starts turned off to prepare the drawings before going public
   bool isExecutionAllowed = false;
@@ -44,8 +46,9 @@ contract DadaCollectible {
     bool allPrintsAssigned;
     uint initialPrice;
     uint initialPrintIndex;
-    /* This creates an array with all balances */
-    mapping (address => uint) balanceOf;
+    string collectionName;
+    uint authorUId; // user id at dada.nyc
+    string scarcity; // denotes scarcity
   }    
 
   // the key is represented by the string "[drawingId]:[printIndex]" which is 
@@ -73,6 +76,9 @@ contract DadaCollectible {
   mapping (uint => Collectible) public drawingIdToCollectibles;
 
   mapping (address => uint) public pendingWithdrawals;
+
+  /* This creates an array with all balances */
+  mapping (addrebalanceOf;
 
   event Assigned(address indexed to, uint256 collectibleIndex, uint256 printIndex);
   event Transfered(address indexed from, address indexed to, uint256 value);
@@ -118,9 +124,9 @@ contract DadaCollectible {
 
     DrawingPrintToAddress[printIndex] = buyer; // "gives" the print to the buyer
     // decrease by one the amount of prints the seller has of this particullar drawing
-    collectible.balanceOf[seller]--;
+    balanceOf[seller]--;
     // increase by one the amount of prints the buyer has of this particullar drawing
-    collectible.balanceOf[buyer]++;
+    balanceOf[buyer]++;
 
     // launch the Transfered event
     Transfered(seller, buyer, 1);
@@ -136,9 +142,11 @@ contract DadaCollectible {
       // seller gets base value plus 60% of the profit
       pendingWithdrawals[seller] += offer.lastSellValue + (profit*60/100); 
       // dada gets 10% of the profit
-      pendingWithdrawals[owner] += (profit*10/100);
+      // pendingWithdrawals[owner] += (profit*10/100);
       // dada receives 30% of the profit to give to the artist
-      pendingWithdrawals[owner] += (profit*30/100);
+      // pendingWithdrawals[owner] += (profit*30/100);
+      // going manual for artist and dada percentages (30 + 10)
+      pendingWithdrawals[owner] += (profit*40/100);
     }else{
       // if the seller doesn't make a profit of the sell he gets the 100% of the traded
       // value.
@@ -159,6 +167,60 @@ contract DadaCollectible {
     }
   }
 
+  // buyer's functions
+  function alt_buyCollectible(uint drawingId, uint printIndex) payable {
+    require(isExecutionAllowed);
+    // requires the drawing id to actually exist
+    require(drawingIdToCollectibles[drawingId].drawingId != 0);
+    Collectible storage collectible = drawingIdToCollectibles[drawingId];
+    require(printIndex < collectible.totalSupply+collectible.initialPrintIndex);
+    Offer storage offer = OfferedForSale[printIndex];
+    require(offer.drawingId == 0);
+    
+    // redundant?
+    require(!offer.isForSale); // drawing actually for sale
+    require(offer.onlySellTo == 0x0);  // onlySellTo should be "null" address (0x0) since the offer was never configured
+    require(msg.value >= collectible.initialPrice); // Didn't send enough ETH
+    require(offer.seller == 0x0); // Seller should be a "null" address since the offer has not been previously configured
+    require(DrawingPrintToAddress[printIndex] == 0x0); // should be equal to a "null" address (0x0) since it shouldn't have an owner yet
+
+    address seller = dada_account;
+    address buyer = msg.sender;
+
+    DrawingPrintToAddress[printIndex] = buyer; // "gives" the print to the buyer
+    // decrease by one the amount of prints the seller has of this particullar drawing
+    // commented while we decide what to do with balances for DADA
+    // balanceOf[seller]--;
+    // increase by one the amount of prints the buyer has of this particullar drawing
+    balanceOf[buyer]++;
+
+    // launch the Transfered event
+    Transfered(seller, buyer, 1);
+
+    // transfer ETH to the seller
+    // profit delta must be equal or greater than 1e-16 to be able to divide it
+    // between the involved entities (art creator -> 30%, seller -> 60% and dada -> 10%)
+    // profit percentages can't be lower than 1e-18 which is the lowest unit in ETH
+    // equivalent to 1 wei.
+    // if(offer.lastSellValue > msg.value && (msg.value - offer.lastSellValue) >= uint(0.0000000000000001) ){ commented because we're assuming values are expressed in  "weis", adjusting in relation to that
+
+    pendingWithdrawals[dada_account] += msg.value;
+    
+    OfferedForSale[printIndex] = Offer(false, collectible.drawingId, printIndex, buyer, collectible.initialPrice, 0x0, collectible.initialPrice);
+
+    // launch the CollectibleBought event    
+    CollectibleBought(drawingId, printIndex, msg.value, seller, buyer);
+
+    // Check for the case where there is a bid from the new owner and refund it.
+    // Any other bid can stay in place.
+    Bid storage bid = Bids[printIndex];
+    if (bid.bidder == buyer) {
+      // Kill bid and refund value
+      pendingWithdrawals[buyer] += bid.value;
+      Bids[printIndex] = Bid(false, collectible.drawingId, printIndex, 0x0, 0);
+    }
+  }
+  
   function enterBidForCollectible(uint drawingId, uint printIndex) payable {
     require(isExecutionAllowed);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
@@ -241,8 +303,8 @@ contract DadaCollectible {
     require(bid.value >= minPrice); // Prevent a condition where a bid is withdrawn and replaced with a lower bid but seller doesn't know
 
     DrawingPrintToAddress[printIndex] = bid.bidder;
-    collectible.balanceOf[seller]--;
-    collectible.balanceOf[bid.bidder]++;
+    balanceOf[seller]--;
+    balanceOf[bid.bidder]++;
     Transfered(seller, bid.bidder, 1);
     uint amount = bid.value;
 
@@ -298,8 +360,8 @@ contract DadaCollectible {
     }
     // sets the new owner of the print
     DrawingPrintToAddress[printIndex] = to;
-    collectible.balanceOf[msg.sender]--;
-    collectible.balanceOf[to]++;
+    balanceOf[msg.sender]--;
+    balanceOf[to]++;
     Transfered(msg.sender, to, 1);
     CollectibleTransfered(msg.sender, to, drawingId, printIndex);
     // Check for the case where there is a bid from the new owner and refund it.
@@ -357,9 +419,16 @@ contract DadaCollectible {
         numberCollectiblesReservedThisRun++;
         collectible.nextPrintIndexToAssign++;
     }
-    collectible.balanceOf[msg.sender] += numberCollectiblesReservedThisRun;
+    balanceOf[msg.sender] += numberCollectiblesReservedThisRun;
     if(collectible.totalSupply+collectible.initialPrintIndex == collectible.nextPrintIndexToAssign){
       collectible.allPrintsAssigned = true;
     }
   }
+
+  function markAllPrintsAssigned(uint drawingId){
+    require(test_owner_1 == msg.sender || test_owner_2 == msg.sender || test_owner_3 == msg.sender);
+    require(drawingIdToCollectibles[drawingId].drawingId != 0);
+    drawingIdToCollectibles[drawingId].allPrintsAssigned = true;
+  }
+  
 }
