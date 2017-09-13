@@ -387,14 +387,14 @@ contract DadaCollectible {
     CollectibleNoLongerForSale(collectible.drawingId, printIndex);
   }
 
-  function newCollectible(uint drawingId, string name, uint totalSupply, uint initialPrice, uint initialPrintIndex){
+  function newCollectible(uint drawingId, string name, uint totalSupply, uint initialPrice, uint initialPrintIndex, string collectionName, uint authorUId, string scarcity){
     // requires the sender to be the same address that compiled the contract,
     // this is ensured by storing the sender address
     // require(owner == msg.sender);
     require(test_owner_1 == msg.sender || test_owner_2 == msg.sender || test_owner_3 == msg.sender);
     // requires the drawing to not exist already in the scope of the contract
     require(drawingIdToCollectibles[drawingId].drawingId == 0);
-    drawingIdToCollectibles[drawingId] = Collectible(drawingId, name, totalSupply, initialPrintIndex, false, initialPrice, initialPrintIndex);
+    drawingIdToCollectibles[drawingId] = Collectible(drawingId, name, totalSupply, initialPrintIndex, false, initialPrice, initialPrintIndex, collectionName, authorUId, scarcity);
   }
 
   function flipSwitchTo(bool state){
