@@ -1,4 +1,4 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.15;
 
 /**
  * This contract handles the actions for every collectible on DADA...
