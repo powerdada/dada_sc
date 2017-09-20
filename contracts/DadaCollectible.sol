@@ -110,8 +110,8 @@ contract DadaCollectible {
 
     // Update total supply
     totalSupply = 15000;
-    // Give the owner all initial tokens
-    balances[owner] = totalSupply;
+    // Give the DADA all initial tokens
+    balances[dada_account] = totalSupply;
 
     // Set the name for display purposes
     name = "DADA Collectible";
@@ -393,6 +393,7 @@ contract DadaCollectible {
       pendingWithdrawals[to] += bid.value;
       Bids[printIndex] = Bid(false, drawingId, printIndex, 0x0, 0);
     }
+    return true;
   }
 
   // utility functions
