@@ -187,7 +187,6 @@ contract DadaCollectible {
     }
   }
 
-  // buyer's functions
   function alt_buyCollectible(uint drawingId, uint printIndex) payable {
     require(isExecutionAllowed);
     // requires the drawing id to actually exist
@@ -219,23 +218,22 @@ contract DadaCollectible {
     // between the involved entities (art creator -> 30%, seller -> 60% and dada -> 10%)
     // profit percentages can't be lower than 1e-18 which is the lowest unit in ETH
     // equivalent to 1 wei.
-    // if(offer.lastSellValue > msg.value && (msg.value - offer.lastSellValue) >= uint(0.0000000000000001) ){ commented because we're assuming values are expressed in  "weis", adjusting in relation to that
 
     pendingWithdrawals[dada_account] += msg.value;
     
-    OfferedForSale[printIndex] = Offer(false, collectible.drawingId, printIndex, buyer, collectible.initialPrice, 0x0, collectible.initialPrice);
+    OfferedForSale[printIndex] = Offer(false, collectible.drawingId, printIndex, buyer, msg.value, 0x0, msg.value);
 
-    // launch the CollectibleBought event    
-    CollectibleBought(drawingId, printIndex, msg.value, seller, buyer);
+    // // launch the CollectibleBought event    
+    // CollectibleBought(drawingId, printIndex, msg.value, seller, buyer);
 
-    // Check for the case where there is a bid from the new owner and refund it.
-    // Any other bid can stay in place.
-    Bid storage bid = Bids[printIndex];
-    if (bid.bidder == buyer) {
-      // Kill bid and refund value
-      pendingWithdrawals[buyer] += bid.value;
-      Bids[printIndex] = Bid(false, collectible.drawingId, printIndex, 0x0, 0);
-    }
+    // // Check for the case where there is a bid from the new owner and refund it.
+    // // Any other bid can stay in place.
+    // Bid storage bid = Bids[printIndex];
+    // if (bid.bidder == buyer) {
+    //   // Kill bid and refund value
+    //   pendingWithdrawals[buyer] += bid.value;
+    //   Bids[printIndex] = Bid(false, collectible.drawingId, printIndex, 0x0, 0);
+    // }
   }
   
   function enterBidForCollectible(uint drawingId, uint printIndex) payable {
