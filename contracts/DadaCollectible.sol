@@ -86,7 +86,11 @@ contract DadaCollectible {
   mapping (address => uint) public pendingWithdrawals;
 
   /* This creates an array with all balances */
-  mapping (address => uint) public balanceOf;
+  mapping (address => uint256) public balances;
+  // the balance of a particular account
+  function balanceOf(address _owner) constant returns (uint256 balance) {
+    return balances[_owner];
+  } 
 
   event Assigned(address indexed to, uint256 collectibleIndex, uint256 printIndex);
   event Transfer(address indexed from, address indexed to, uint256 value);
@@ -107,7 +111,7 @@ contract DadaCollectible {
     // Update total supply
     totalSupply = 15000;
     // Give the owner all initial tokens
-    balanceOf[owner] = totalSupply;
+    balances[owner] = totalSupply;
 
     // Set the name for display purposes
     name = "DADA Collectible";
@@ -140,9 +144,9 @@ contract DadaCollectible {
     DrawingPrintToAddress[printIndex] = buyer; // "gives" the print to the buyer
 
     // decrease by one the amount of prints the seller has of this particullar drawing
-    balanceOf[seller]--;
+    balances[seller]--;
     // increase by one the amount of prints the buyer has of this particullar drawing
-    balanceOf[buyer]++;
+    balances[buyer]++;
 
     // launch the Transfered event
     Transfer(seller, buyer, 1);
@@ -207,9 +211,9 @@ contract DadaCollectible {
 
     // decrease by one the amount of prints the seller has of this particullar drawing
     // commented while we decide what to do with balances for DADA
-    balanceOf[seller]--;
+    balances[seller]--;
     // increase by one the amount of prints the buyer has of this particullar drawing
-    balanceOf[buyer]++;
+    balances[buyer]++;
 
     // launch the Transfered event
     Transfer(seller, buyer, 1);
@@ -320,8 +324,8 @@ contract DadaCollectible {
     require(bid.value >= minPrice); // Prevent a condition where a bid is withdrawn and replaced with a lower bid but seller doesn't know
 
     DrawingPrintToAddress[printIndex] = bid.bidder;
-    balanceOf[seller]--;
-    balanceOf[bid.bidder]++;
+    balances[seller]--;
+    balances[bid.bidder]++;
     Transfer(seller, bid.bidder, 1);
     uint amount = bid.value;
 
@@ -364,7 +368,7 @@ contract DadaCollectible {
   }
 
   // Transfer ownership of a punk to another user without requiring payment
-  function transferCollectible(address to, uint drawingId, uint printIndex) {
+  function transfer(address to, uint drawingId, uint printIndex) returns (bool success){
     require(isExecutionAllowed);
     // require(collectible.allPrintsAssigned);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
@@ -377,8 +381,8 @@ contract DadaCollectible {
     }
     // sets the new owner of the print
     DrawingPrintToAddress[printIndex] = to;
-    balanceOf[msg.sender]--;
-    balanceOf[to]++;
+    balances[msg.sender]--;
+    balances[to]++;
     Transfer(msg.sender, to, 1);
     CollectibleTransfer(msg.sender, to, drawingId, printIndex);
     // Check for the case where there is a bid from the new owner and refund it.
