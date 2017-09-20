@@ -129,7 +129,7 @@ contract DadaCollectible {
     // requires the drawing id to actually exist
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
-    require(printIndex < collectible.totalSupply+collectible.initialPrintIndex &&  printIndex >= collectible.initialPrintIndex);
+    require((printIndex < (collectible.totalSupply+collectible.initialPrintIndex)) &&  (printIndex >= collectible.initialPrintIndex));
     Offer storage offer = OfferedForSale[printIndex];
     require(offer.drawingId != 0);
     require(offer.isForSale); // drawing actually for sale
@@ -193,15 +193,11 @@ contract DadaCollectible {
     // requires the drawing id to actually exist
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
-    require(printIndex < collectible.totalSupply+collectible.initialPrintIndex &&  printIndex >= collectible.initialPrintIndex);
+    require((printIndex < (collectible.totalSupply+collectible.initialPrintIndex)) &&  (printIndex >= collectible.initialPrintIndex));
     Offer storage offer = OfferedForSale[printIndex];
     require(offer.drawingId == 0);
     
-    // redundant?
-    require(!offer.isForSale); // drawing actually for sale
-    require(offer.onlySellTo == 0x0);  // onlySellTo should be "null" address (0x0) since the offer was never configured
     require(msg.value >= collectible.initialPrice); // Didn't send enough ETH
-    require(offer.seller == 0x0); // Seller should be a "null" address since the offer has not been previously configured
     require(DrawingPrintToAddress[printIndex] == 0x0); // should be equal to a "null" address (0x0) since it shouldn't have an owner yet
 
     address seller = dada_account;
