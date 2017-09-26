@@ -8,7 +8,7 @@ contract DadaCollectible {
 
   address owner;
   // jgonzalez
-  address test_owner_1 = 0x74E70E9f66A63fB157c3B3519b994e33188Fae29;
+  address test_owner_1 = 0xf73d25d8b7255DE2a57971B3EeAbCd2b17A1D83e;
   // amilano
   address test_owner_2 = 0x520B8e6048C9603b7fee1c4953D2f04E07E42a19;
   // jcflorville
