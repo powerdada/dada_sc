@@ -48,7 +48,7 @@ contract DadaCollectible {
 
   struct Collectible{
     uint drawingId;
-    string drawingTitle;
+    string checkSum; // digest of the drawing, created using  SHA2
     uint totalSupply;
     uint nextPrintIndexToAssign;
     bool allPrintsAssigned;
@@ -405,14 +405,14 @@ contract DadaCollectible {
     CollectibleNoLongerForSale(collectible.drawingId, printIndex);
   }
 
-  function newCollectible(uint drawingId, string drawingTitle, uint256 _totalSupply, uint initialPrice, uint initialPrintIndex, string collectionName, uint authorUId, string scarcity){
+  function newCollectible(uint drawingId, string checkSum, uint256 _totalSupply, uint initialPrice, uint initialPrintIndex, string collectionName, uint authorUId, string scarcity){
     // requires the sender to be the same address that compiled the contract,
     // this is ensured by storing the sender address
     // require(owner == msg.sender);
     require(test_owner_1 == msg.sender || test_owner_2 == msg.sender || test_owner_3 == msg.sender);
     // requires the drawing to not exist already in the scope of the contract
     require(drawingIdToCollectibles[drawingId].drawingId == 0);
-    drawingIdToCollectibles[drawingId] = Collectible(drawingId, drawingTitle, _totalSupply, initialPrintIndex, false, initialPrice, initialPrintIndex, collectionName, authorUId, scarcity);
+    drawingIdToCollectibles[drawingId] = Collectible(drawingId, checkSum, _totalSupply, initialPrintIndex, false, initialPrice, initialPrintIndex, collectionName, authorUId, scarcity);
   }
 
   function flipSwitchTo(bool state){
