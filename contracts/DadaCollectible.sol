@@ -6,15 +6,9 @@ pragma solidity ^0.4.13;
 
 contract DadaCollectible {
 
+  // DADA's account
   address owner;
-  // jgonzalez
-  address test_owner_1 = 0xf73d25d8b7255DE2a57971B3EeAbCd2b17A1D83e;
-  // amilano
-  address test_owner_2 = 0x520B8e6048C9603b7fee1c4953D2f04E07E42a19;
-  // jcflorville
-  address test_owner_3 = 0xA8CB5714d4830e7503a1585448e130A15f6bED64;
-  // DADA ACCOUNT
-  address dada_account = 0x520B8e6048C9603b7fee1c4953D2f04E07E42a19;
+
 
   // starts turned off to prepare the drawings before going public
   bool isExecutionAllowed = false;
@@ -24,9 +18,6 @@ contract DadaCollectible {
   string public symbol;
   uint8 public decimals;
   uint256 public totalSupply;
-
-
-  // a wei is 0.000000000000000001 -> 1e-18;
 
   struct Offer {
       bool isForSale;
@@ -55,43 +46,37 @@ contract DadaCollectible {
     uint initialPrice;
     uint initialPrintIndex;
     string collectionName;
-    uint authorUId; // user id at dada.nyc
-    string scarcity; // denotes scarcity
+    uint authorUId; // drawing creator id 
+    string scarcity; // denotes how scarce is the drawing
   }    
 
-  // the key is represented by the string "[drawingId]:[printIndex]" which is 
-  // then converted to bytes32...
-  // the value is the user who owns that specific print expressed by the address
+  // key: printIndex
+  // the value is the user who owns that specific print
   mapping (uint => address) public DrawingPrintToAddress;
   
-  // the key is represented by the string "[drawingId]:[printIndex]" which is 
-  // then converted to bytes32...
   // A record of collectibles that are offered for sale at a specific minimum value, 
-  // and perhaps to a specific person, the key to access and offer is the printIndex
+  // and perhaps to a specific person, the key to access and offer is the printIndex.
   // since every single offer inside the Collectible struct will be tied to the main
   // drawingId that identifies that collectible.
   mapping (uint => Offer) public OfferedForSale;
 
-  // the key is represented by the string "[drawingId]:[printIndex]" which is 
-  // then converted to bytes32...
-  // A record of the highest collectible bid, the key to access a bid 
-  // is the printIndex since every single offer inside the Collectible struct 
-  // will be tied to the main drawingId that identifies that collectible.
+  // A record of the highest collectible bid, the key to access a bid is the printIndex
   mapping (uint => Bid) public Bids;
 
 
-  // "Hash" list of the different Collectibles available in gallery
+  // "Hash" list of the different Collectibles available in the market place
   mapping (uint => Collectible) public drawingIdToCollectibles;
 
   mapping (address => uint) public pendingWithdrawals;
 
-  /* This creates an array with all balances */
   mapping (address => uint256) public balances;
-  // the balance of a particular account
+
+  // returns the balance of a particular account
   function balanceOf(address _owner) constant returns (uint256 balance) {
     return balances[_owner];
   } 
 
+  // Events
   event Assigned(address indexed to, uint256 collectibleIndex, uint256 printIndex);
   event Transfer(address indexed from, address indexed to, uint256 value);
   event CollectibleTransfer(address indexed from, address indexed to, uint256 collectibleIndex, uint256 printIndex);
@@ -102,16 +87,16 @@ contract DadaCollectible {
   event CollectibleNoLongerForSale(uint indexed collectibleIndex, uint indexed printIndex);
 
   // The constructor is executed only when the contract is created in the blockchain.
-  function DadaCollectible () { //payable?
+  function DadaCollectible () { 
     // assigns the address of the account creating the contract as the 
     // "owner" of the contract. Since the contract doesn't have 
     // a "set" function for the owner attribute this value will be immutable. 
     owner = msg.sender;
 
     // Update total supply
-    totalSupply = 15000;
-    // Give the DADA all initial tokens
-    balances[dada_account] = totalSupply;
+    totalSupply = 16600;
+    // Give to DADA all initial drawings
+    balances[owner] = totalSupply;
 
     // Set the name for display purposes
     name = "DADA Collectible";
@@ -122,7 +107,7 @@ contract DadaCollectible {
   }
 
   // main business logic functions
-
+  
   // buyer's functions
   function buyCollectible(uint drawingId, uint printIndex) payable {
     require(isExecutionAllowed);
@@ -162,11 +147,11 @@ contract DadaCollectible {
       // seller gets base value plus 60% of the profit
       pendingWithdrawals[seller] += offer.lastSellValue + (profit*60/100); 
       // dada gets 10% of the profit
-      // pendingWithdrawals[dada_account] += (profit*10/100);
+      // pendingWithdrawals[owner] += (profit*10/100);
       // dada receives 30% of the profit to give to the artist
-      // pendingWithdrawals[dada_account] += (profit*30/100);
+      // pendingWithdrawals[owner] += (profit*30/100);
       // going manual for artist and dada percentages (30 + 10)
-      pendingWithdrawals[dada_account] += (profit*40/100);
+      pendingWithdrawals[owner] += (profit*40/100);
     }else{
       // if the seller doesn't make a profit of the sell he gets the 100% of the traded
       // value.
@@ -199,7 +184,7 @@ contract DadaCollectible {
     require(msg.value >= collectible.initialPrice); // Didn't send enough ETH
     require(DrawingPrintToAddress[printIndex] == 0x0); // should be equal to a "null" address (0x0) since it shouldn't have an owner yet
 
-    address seller = dada_account;
+    address seller = owner;
     address buyer = msg.sender;
 
     DrawingPrintToAddress[printIndex] = buyer; // "gives" the print to the buyer
@@ -219,7 +204,7 @@ contract DadaCollectible {
     // profit percentages can't be lower than 1e-18 which is the lowest unit in ETH
     // equivalent to 1 wei.
 
-    pendingWithdrawals[dada_account] += msg.value;
+    pendingWithdrawals[owner] += msg.value;
     
     OfferedForSale[printIndex] = Offer(false, collectible.drawingId, printIndex, buyer, msg.value, 0x0, msg.value);
 
@@ -243,7 +228,6 @@ contract DadaCollectible {
     require(DrawingPrintToAddress[printIndex] != 0x0); // Print is owned by somebody
     require(DrawingPrintToAddress[printIndex] != msg.sender); // Print is not owned by bidder
     require((printIndex < (collectible.totalSupply+collectible.initialPrintIndex)) && (printIndex >= collectible.initialPrintIndex));
-    // require(collectible.allPrintsAssigned);            
 
     require(msg.value > 0); // Bid must be greater than 0
     // get the current bid for that print if any
@@ -266,7 +250,6 @@ contract DadaCollectible {
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
     require((printIndex < (collectible.totalSupply+collectible.initialPrintIndex)) && (printIndex >= collectible.initialPrintIndex));
-    // require(collectible.allPrintsAssigned);
     require(DrawingPrintToAddress[printIndex] != 0x0); // Print is owned by somebody
     require(DrawingPrintToAddress[printIndex] != msg.sender); // Print is not owned by bidder
     Bid storage bid = Bids[printIndex];
@@ -282,7 +265,6 @@ contract DadaCollectible {
   // seller's functions
   function offerCollectibleForSale(uint drawingId, uint printIndex, uint minSalePriceInWei) {
     require(isExecutionAllowed);
-    // require(allCollectiblesAssigned);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
     require(DrawingPrintToAddress[printIndex] == msg.sender);
@@ -292,9 +274,23 @@ contract DadaCollectible {
     CollectibleOffered(drawingId, printIndex, minSalePriceInWei, 0x0, lastSellValue);
   }
 
+  function withdrawOfferForCollectible(uint drawingId, uint printIndex){
+    require(isExecutionAllowed);
+    require(drawingIdToCollectibles[drawingId].drawingId != 0);
+    Collectible storage collectible = drawingIdToCollectibles[drawingId];
+    require(DrawingPrintToAddress[printIndex] == msg.sender);
+    require((printIndex < (collectible.totalSupply+collectible.initialPrintIndex)) && (printIndex >= collectible.initialPrintIndex));
+
+    uint lastSellValue = OfferedForSale[printIndex].lastSellValue;
+
+    OfferedForSale[printIndex] = Offer(false, collectible.drawingId, printIndex, msg.sender, 0, 0x0, lastSellValue);
+    // launch the CollectibleNoLongerForSale event 
+    CollectibleNoLongerForSale(collectible.drawingId, printIndex);
+
+  }
+
   function offerCollectibleForSaleToAddress(uint drawingId, uint printIndex, uint minSalePriceInWei, address toAddress) {
     require(isExecutionAllowed);
-    // require(allCollectiblesAssigned);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
     require(DrawingPrintToAddress[printIndex] == msg.sender);
@@ -309,7 +305,6 @@ contract DadaCollectible {
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
     require((printIndex < (collectible.totalSupply+collectible.initialPrintIndex)) && (printIndex >= collectible.initialPrintIndex));
-    // require(collectible.allPrintsAssigned);
     require(DrawingPrintToAddress[printIndex] == msg.sender);
     address seller = msg.sender;
 
@@ -335,10 +330,10 @@ contract DadaCollectible {
       // seller gets base value plus 60% of the profit
       pendingWithdrawals[seller] += offer.lastSellValue + (profit*60/100); 
       // dada gets 10% of the profit
-      // pendingWithdrawals[dada_account] += (profit*10/100);
+      // pendingWithdrawals[owner] += (profit*10/100);
       // dada receives 30% of the profit to give to the artist
-      // pendingWithdrawals[dada_account] += (profit*30/100);
-      pendingWithdrawals[dada_account] += (profit*40/100);
+      // pendingWithdrawals[owner] += (profit*30/100);
+      pendingWithdrawals[owner] += (profit*40/100);
 
     }else{
       // if the seller doesn't make a profit of the sell he gets the 100% of the traded
@@ -355,7 +350,6 @@ contract DadaCollectible {
   // used by a user who wants to cashout his money
   function withdraw() {
     require(isExecutionAllowed);
-    // require(collectible.allPrintsAssigned);
     uint amount = pendingWithdrawals[msg.sender];
     // Remember to zero the pending refund before
     // sending to prevent re-entrancy attacks
@@ -366,7 +360,6 @@ contract DadaCollectible {
   // Transfer ownership of a punk to another user without requiring payment
   function transfer(address to, uint drawingId, uint printIndex) returns (bool success){
     require(isExecutionAllowed);
-    // require(collectible.allPrintsAssigned);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
     // checks that the user making the transfer is the actual owner of the print
@@ -395,7 +388,6 @@ contract DadaCollectible {
   // utility functions
   function makeCollectibleUnavailableToSale(uint drawingId, uint printIndex, uint lastSellValue) {
     require(isExecutionAllowed);
-    // require(allCollectiblesAssigned);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
     require(DrawingPrintToAddress[printIndex] == msg.sender);
@@ -409,7 +401,7 @@ contract DadaCollectible {
     // requires the sender to be the same address that compiled the contract,
     // this is ensured by storing the sender address
     // require(owner == msg.sender);
-    require(test_owner_1 == msg.sender || test_owner_2 == msg.sender || test_owner_3 == msg.sender);
+    require(owner == msg.sender);
     // requires the drawing to not exist already in the scope of the contract
     require(drawingIdToCollectibles[drawingId].drawingId == 0);
     drawingIdToCollectibles[drawingId] = Collectible(drawingId, checkSum, _totalSupply, initialPrintIndex, false, initialPrice, initialPrintIndex, collectionName, authorUId, scarcity);
@@ -417,25 +409,16 @@ contract DadaCollectible {
 
   function flipSwitchTo(bool state){
     // require(owner == msg.sender);
-    require(test_owner_1 == msg.sender || test_owner_2 == msg.sender || test_owner_3 == msg.sender);
+    require(owner == msg.sender);
     isExecutionAllowed = state;
   }
-  
-  // converts uint into string
-  // function uintToString(uint v) internal returns (string) {
-  //   uint maxlength = 100;
-  //   bytes memory reversed = new bytes(maxlength);
-  //   uint i = 0;
-  //   while (v != 0) {
-  //       uint remainder = v % 10;
-  //       v = v / 10;
-  //       reversed[i++] = byte(48 + remainder);
-  //   }
-  //   bytes memory s = new bytes(i + 1);
-  //   for (uint j = 0; j <= i; j++) {
-  //       s[j] = reversed[i - j];
-  //   }
-  //   return string(s);
-  // }
+
+  function mintNewDrawings(uint amount){
+    require(owner == msg.sender);
+    totalSupply = totalSupply + amount;
+    balances[owner] = balances[owner] + amount;
+
+    Transfer(0, owner, amount);
+  }
 
 }
