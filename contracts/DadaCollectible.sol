@@ -300,7 +300,7 @@ contract DadaCollectible {
     CollectibleOffered(drawingId, printIndex, minSalePriceInWei, toAddress, lastSellValue);
   }
 
-  function acceptBidForCollectible(uint drawingId, uint printIndex, uint minPrice) {
+  function acceptBidForCollectible(uint drawingId, uint minPrice, uint printIndex) {
     require(isExecutionAllowed);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
