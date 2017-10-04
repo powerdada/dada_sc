@@ -157,7 +157,7 @@ contract DadaCollectible {
       // value.
       pendingWithdrawals[seller] += msg.value;
     }
-    makeCollectibleUnavailableToSale(drawingId, printIndex, msg.value);
+    makeCollectibleUnavailableToSale(buyer, drawingId, printIndex, msg.value);
 
     // launch the CollectibleBought event    
     CollectibleBought(drawingId, printIndex, msg.value, seller, buyer);
@@ -366,7 +366,7 @@ contract DadaCollectible {
     require(DrawingPrintToAddress[printIndex] == msg.sender);
     require((printIndex < (collectible.totalSupply+collectible.initialPrintIndex)) && (printIndex >= collectible.initialPrintIndex));
     if (OfferedForSale[printIndex].isForSale) {
-      makeCollectibleUnavailableToSale(drawingId, printIndex, OfferedForSale[printIndex].lastSellValue);
+      makeCollectibleUnavailableToSale(to, drawingId, printIndex, OfferedForSale[printIndex].lastSellValue);
     }
     // sets the new owner of the print
     DrawingPrintToAddress[printIndex] = to;
@@ -386,13 +386,13 @@ contract DadaCollectible {
   }
 
   // utility functions
-  function makeCollectibleUnavailableToSale(uint drawingId, uint printIndex, uint lastSellValue) {
+  function makeCollectibleUnavailableToSale(address to, uint drawingId, uint printIndex, uint lastSellValue) {
     require(isExecutionAllowed);
     require(drawingIdToCollectibles[drawingId].drawingId != 0);
     Collectible storage collectible = drawingIdToCollectibles[drawingId];
     require(DrawingPrintToAddress[printIndex] == msg.sender);
     require((printIndex < (collectible.totalSupply+collectible.initialPrintIndex)) && (printIndex >= collectible.initialPrintIndex));
-    OfferedForSale[printIndex] = Offer(false, collectible.drawingId, printIndex, msg.sender, 0, 0x0, lastSellValue);
+    OfferedForSale[printIndex] = Offer(false, collectible.drawingId, printIndex, to, 0, 0x0, lastSellValue);
     // launch the CollectibleNoLongerForSale event 
     CollectibleNoLongerForSale(collectible.drawingId, printIndex);
   }
