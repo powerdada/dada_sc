@@ -365,9 +365,7 @@ contract DadaCollectible {
     // checks that the user making the transfer is the actual owner of the print
     require(DrawingPrintToAddress[printIndex] == msg.sender);
     require((printIndex < (collectible.totalSupply+collectible.initialPrintIndex)) && (printIndex >= collectible.initialPrintIndex));
-    if (OfferedForSale[printIndex].isForSale) {
-      makeCollectibleUnavailableToSale(to, drawingId, printIndex, OfferedForSale[printIndex].lastSellValue);
-    }
+    makeCollectibleUnavailableToSale(to, drawingId, printIndex, OfferedForSale[printIndex].lastSellValue);
     // sets the new owner of the print
     DrawingPrintToAddress[printIndex] = to;
     balances[msg.sender]--;
