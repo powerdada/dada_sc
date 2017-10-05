@@ -9,21 +9,8 @@ DADA Smart Contract v1.0
 All commands should be executed in the project folder
 
 ### Compile/Migrate 
-`truffel migrate`
+`truffle migrate`
 
 ### Truffle Console
 `truffle console`
 
-# Web 3 Commands
-## Example
-1. Create new Collectible
-```DADA_ETHER.DadaCollectibleContract.newCollectible(471,"First",10,1,1000,function(error,result){console.log(result);})```
-
-2. Reserve Collectible
-```DADA_ETHER.DadaCollectibleContract.reserveCollectiblesForOwner(471,10,function(error,response){console.log(response);})```
-
-3. Flip Switch
-```DADA_ETHER.DadaCollectibleContract.flipSwitchTo(true,function(error,response){console.log(response);})```
-
-4. Witdraw
-```DADA_ETHER.DadaCollectibleContract.withdraw(function(error,response){console.log(response);})```
