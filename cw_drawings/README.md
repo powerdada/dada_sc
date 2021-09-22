@@ -35,7 +35,7 @@ Unique id for each artwork image. Artworks in the C&W collection were originally
 
 ### checksum 
 SHA-256 hash of the image file. Can be used to verify that a token refers to a specific drawing. The images matching the checksum are available in this GitHub directory: 
-https://github.com/powerdada/dada_sc/cw_drawings/
+https://github.com/powerdada/dada_sc/tree/master/cw_drawings
 
 (_* please see notes for an exception & an enigma_)
 
